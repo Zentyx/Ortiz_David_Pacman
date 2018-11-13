@@ -4,212 +4,222 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body>
+    <body id="all">
         <div>
 
             <script>
-                //a=setinterval(funcioSinParentesi,temps); cuando queramos dejar de hacer el proceso: clear interval(a);
-
+                /* Arriba: 1 * Derecha: 2 * Abajo: 3 * Izquierda:4*/
+                //if x+1<29 && tauler[x+1][y]=0 contador++; 
+                //if x+1>29 && tauler[x-1][y]=0 contador++; 
+                var documento = document.getElementById("all");
                 var row = "";
+                var repite;
                 var casilla = new Array(30);
                 for (var i = 0; i < casilla.length; i++) {
                     casilla[i] = new Array(30);
                 }
-                crearMapa();
-
-                /* Arriba: W
-                 * Derecha: D
-                 * Abajo: S
-                 * Izquierda:A*/
+                crearMapa();//rellenaremos el array manualmente sin ubicar los fantasmas ni el jugador
+                //creacion de los elementos
                 var fantasma1 = [];
                 fantasma1 = crearPersonaje(fantasma1);
                 var fantasma2 = [];
                 fantasma2 = crearPersonaje(fantasma2);
                 var fantasma3 = [];
                 fantasma3 = crearPersonaje(fantasma3);
-//                var jugador = [28, 16, "", ""];
+                //al tener una longitud de 4 posiciones lo diferenciaremos de los fantasmas
                 var jugador = new Array(4);
                 jugador = crearPersonaje(jugador);
+                //buscaremos en que posicion del mapa están situados y cambiaremos ese 1 por la letra que le corresonda
+                //ABC son los fantasmas y J el jugador (de momento)
                 pintarPersonajes();
-                setInterval(movimientoFantasma, 1000);
-
-
-                function movimientoFantasma() {
+                //repetiremos este metodo cada cierto tiempo para comprobar direcciones a las que pueden ir los elementos y moverlos.
+                var element = document.getElementById("all");
+                    element.addEventListener("keydown", notificaObservador);
+                    
+                    function notificaObservador(e) {
+                    console.log("Event " + e.type)
+                    console.log(e);      //a la consola podeu veure l'objecte que té dos atributs on s'hi indica la tecla pitjada.                                       
+                }
+                repite = setInterval(operaMovimiento, 500);
+                
+                //metodo que se irá repitiendo que contiene todas las operaciones que tienen que ver con el movimiento
+                function operaMovimiento() {
+                    //comprobaremos en cada movimiento si el fantasma ha chocado con el jugador
+                    
+                    consultaColision(fantasma1);
+                    consultaColision(fantasma2);
+                    consultaColision(fantasma3);
                     var direcValidaF1 = false;
                     var direcValidaF2 = false;
                     var direcValidaF3 = false;
                     var direcValidaJ = false;
-                    do {
-                        direcValidaF1 = compruebaDireccionFantasma(fantasma1);
-                        direcValidaF2 = compruebaDireccionFantasma(fantasma2);
-                        direcValidaF3 = compruebaDireccionFantasma(fantasma3);
-                        direcValidaJ = compruebaDireccionJugador(jugador);
-                    } while (direcValidaF1 == false || direcValidaF2 == false || direcValidaF3 == false || direcValidaJ==false);
 
+                    do {//por cada movimiento comprobaremos si puede seguir avanzando o cambiar de direccion en caso de haber una pared.
+                        direcValidaF1 = compruebaPared(fantasma1);
+                        direcValidaF2 = compruebaPared(fantasma2);
+                        direcValidaF3 = compruebaPared(fantasma3);
+                        direcValidaJ = compruebaPared(jugador);
+                    } while (direcValidaF1 == false || direcValidaF2 == false || direcValidaF3 == false || direcValidaJ == false);
+
+                    //metodo para cambiar los valores de posicion a los fantasmas y al jugador para saber si irán arriba,abajo,izquierda,derecha
                     mover(fantasma1);
                     mover(fantasma2);
                     mover(fantasma3);
                     mover(jugador);
-
+                    //cada vez cambiemos la posicion de los elementos volveremos a pintar el mapa actualizado.
+                    document.body.innerHTML = "";
+                    crearMapa();
+                    pintarPersonajes();
 
                 }
 
-                function mover(fantasma) {
-                    switch (fantasma[2]) {
-                        case 1:
-                            fantasma[0] -= 1;
-                            document.body.innerHTML = "";
-                            crearMapa();
-                            pintarPersonajes();
-                            break;
-                            
-                            case 2:
-                            fantasma[1] += 1;
-                            document.body.innerHTML = "";
-                            crearMapa();
-                            pintarPersonajes();
-                            break;
-                            
-                            case 3:
-                            fantasma[0] += 1;
-                            document.body.innerHTML = "";
-                            crearMapa();
-                            pintarPersonajes();
-                            break;
-                            
-                            case 4:
-                            fantasma[1] -= 1;
-                            document.body.innerHTML = "";
-                            crearMapa();
-                            pintarPersonajes();
-                            break;
-                            
-                        default:
 
+
+                function mover(elemento) {
+                    //miraremos la posicion donde se asigna la dirección.
+                    switch (elemento[2]) {
+                        case 1://arriba
+                            elemento[0] -= 1;
+                            break;
+                        case 2://derecha
+                            elemento[1] += 1;
+                            break;
+                        case 3://abajo
+                            elemento[0] += 1;
+                            break;
+                        case 4://izquierda
+                            elemento[1] -= 1;
+                            break;
+                        default:
                             break;
                     }
                 }
+
                 
-                function compruebaDireccionFantasma(fantasma) {
-                    
-                    switch (fantasma[2]) {
+
+                function compruebaPared(elemento) {
+                    //var cruilla = esCruilla(elemento);
+
+                    //segun la posicion a la que vamos comprobaremos si la siguiente casilla es una pared.
+                    switch (elemento[2]) {
                         case 1:
-                            if (casilla[fantasma[0] - 1][fantasma[1]] == 1||casilla[fantasma[0] - 1][fantasma[1]] == casilla[jugador[0]][jugador[1]]) {
+                            if (casilla[elemento[0] - 1][elemento[1]] != 0) {
                                 return true;
                             } else {
-                                fantasma[2] = Math.floor(Math.random() * 4) + 1;
+                                elemento[2] = Math.floor(Math.random() * 4) + 1;
                                 return false;
                             }
                             break;
-
                         case 2:
-                            if (casilla[fantasma[0]][fantasma[1] + 1] == 1||casilla[fantasma[0]][fantasma[1+1]] == casilla[jugador[0]][jugador[1]]) {
+                            if (casilla[elemento[0]][elemento[1] + 1] != 0) {
                                 return true;
                             } else {
-                                fantasma[2] = Math.floor(Math.random() * 4) + 1;
+                                elemento[2] = Math.floor(Math.random() * 4) + 1;
                                 return false;
                             }
                             break;
-
                         case 3:
-                            if (casilla[fantasma[0] + 1][fantasma[1]] == 1||casilla[fantasma[0] + 1][fantasma[1]] == casilla[jugador[0]][jugador[1]]) {
+                            if (casilla[elemento[0] + 1][elemento[1]] != 0) {
                                 return true;
                             } else {
-                                fantasma[2] = Math.floor(Math.random() * 4) + 1;
+                                elemento[2] = Math.floor(Math.random() * 4) + 1;
                                 return false;
                             }
                             break;
-
                         case 4:
-                            if (casilla[fantasma[0]][fantasma[1] - 1] == 1||casilla[fantasma[0]][fantasma[1]-1] == casilla[jugador[0]][jugador[1]]) {
+                            if (casilla[elemento[0]][elemento[1] - 1] != 0) {
                                 return true;
                             } else {
-                                fantasma[2] = Math.floor(Math.random() * 4) + 1;
+                                elemento[2] = Math.floor(Math.random() * 4) + 1;
                                 return false;
                             }
                             break;
-
                         default:
                             alert("no entro");
                             break;
                     }
 
+
                 }
 
-                function compruebaDireccionJugador(jugador) {
+                function esCruilla(elemento) {
+                    var contador = 0;
+                    if ((elemento[2] == 1 || elemento[2] == 3) && casilla[elemento[0] - 1][elemento[1]] == 1) {
+                        contador++;
+                    }
+                    if ((elemento[2] == 1 || elemento[2] == 3) && casilla[elemento[0] + 1][elemento[1]] == 1) {
+                        contador++;
+                    }
+                    if ((elemento[2] == 2 || elemento[2] == 4) && casilla[elemento[0]][elemento[1]] + 1 == 1) {
+                        contador++;
 
-                    switch (jugador[2]) {
-                        case 1:
-                            if (casilla[jugador[0] - 1][jugador[1]] != 0) {
-                                return true;
-                            } else {
-                                jugador[2] = Math.floor(Math.random() * 4) + 1;
-                                return false;
-                            }
-                            break;
+                    }
+                    if ((elemento[2] == 2 || elemento[2] == 4) && casilla[elemento[0]][jugador[1]] - 1 == 1) {
+                        contador++;
 
-                        case 2:
-                            if (casilla[jugador[0]][jugador[1] + 1] != 0) {
-                                return true;
-                            } else {
-                                jugador[2] = Math.floor(Math.random() * 4) + 1;
-                                return false;
-                            }
-                            break;
+                    }
+                    if (contador > 2) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
 
-                        case 3:
-                            if (casilla[jugador[0] + 1][jugador[1]] != 0) {
-                                return true;
-                            } else {
-                                jugador[2] = Math.floor(Math.random() * 4) + 1;
-                                return false;
-                            }
-                            break;
+                function consultaColision(fantasma) {
+                    //si el jugador y el fantasma ocupan la misma posicion habrán colisionado
+                    if (jugador[0] == fantasma1[0] && jugador[1] == fantasma1[1]) {
 
-                        case 4:
-                            if (casilla[jugador[0]][jugador[1] - 1] != 0) {
-                                return true;
-                            } else {
-                                jugador[2] = Math.floor(Math.random() * 4) + 1;
-                                return false;
-                            }
-                            break;
+                        alert("Fin del juego");
 
-                        default:
-                            alert("no entro");
-                            break;
+                    }
+
+                    //si el fantasma esta delante del jugador y se van a cruzar también lo detectaremos como colisión para que no intercambien posiciones
+                    if (jugador[0] == fantasma[0]) {//ej: si estan en la misma fila
+                        //si el jugador va a la casilla derecha y se encuentra el fantasma en la siguiente que va a la izquieda habrá colisión.
+                        if (jugador[1] + 1 == fantasma[1] && jugador[2] == 2 && fantasma[2] == 4) {
+                            alert("Jugador derecha fantasma izquierda" + parseInt(jugador[1] + 1));
+                        }
+                        //si el fantasma va a la derecha y el jugador a la izquierda habrá colisión
+                        if (jugador[1] - 1 == fantasma[1] && jugador[2] == 4 && fantasma[2] == 2) {
+                            alert("Jugador izquierda fantasma derecha" + parseInt(jugador[1] - 1));
+                        }
+
+                    }
+                    if (jugador[1] == fantasma[1]) {
+                        if (jugador[0] - 1 == fantasma[0] && jugador[2] == 1 && fantasma[2] == 3) {
+                            alert("Jugador abajo fantasma arriba" + parseInt(jugador[0] - 1));
+                        }
+                        if (jugador[0] + 1 == fantasma[0] && jugador[2] == 3 && fantasma[2] == 1) {
+                            alert("Jugador arriba fantasma abajo" + parseInt(jugador[0] + 1));
+                        }
                     }
 
                 }
-
-
 
                 function crearPersonaje(personaje) {
                     var fila = 0;
                     var columna = 0;
                     creado = false;
-
                     var direccio = 0;
-
-
                     do {
+                        //asignaremos una fila y columna de manera aleatoria hasta que la posición del mapa sea 1
                         fila = Math.floor((Math.random() * 29) + 0);
                         columna = Math.floor((Math.random() * 29) + 0);
 
                     } while (casilla[fila][columna] == 0);
 
-                    do {
+                    do {//asignaremos una direccion del 1 al 4 a cada fantasma de manera aleatoria hasta que sea valida.
                         var num = Math.floor((Math.random() * 4) + 1);
                         switch (num) {
-                            case 1:
-                                if (casilla[fila - 1][columna] == 1) {
+                            case 1://arriba
+                                if (casilla[fila - 1][columna] == 1) {//si la casilla de la derecha es 1, la dirección es válida
                                     direccio = 1;
                                     creado = true;
                                 } else {
                                     creado = false;
                                 }
                                 break;
-                            case 2:
+                            case 2://derecha
                                 if (casilla[fila][columna + 1] == 1) {
                                     direccio = 2;
                                     creado = true;
@@ -218,7 +228,7 @@
                                 }
                                 break;
 
-                            case 3:
+                            case 3://abajo
                                 if (casilla[fila + 1][columna] == 1) {
                                     direccio = 3;
                                     creado = true;
@@ -227,7 +237,7 @@
                                 }
                                 break;
 
-                            case 4:
+                            case 4://izquierda
                                 if (casilla[fila][columna - 1] == 1) {
                                     direccio = 4;
                                     creado = true;
@@ -237,26 +247,20 @@
                                 break;
 
                             default :
-                                alert(num + "</br>");
+                                alert(num + "</br>");//nunca entramos aqui
 
                                 break;
 
                         }
 
-
                     } while (creado == false)
 
-                    if (personaje.length == 4) {
+                    if (personaje.length == 4) { //en caso de que el personaje sea el jugador (ya que tiene 4 posiciones)
                         personaje = [fila, columna, direccio, direccio];
 
                     } else {
                         personaje = [fila, columna, direccio];
                     }
-
-
-
-
-
                     return personaje;
                 }
 
@@ -266,13 +270,13 @@
                         for (var j = 0; j < casilla[i].length; j++) {
 
                             if (fantasma1[0] == i && fantasma1[1] == j) {
-                                casilla[i][j] = "<strong>F</strong> ";
-                            }
-                            if (fantasma2[0] == i && fantasma2[1] == j) {
                                 casilla[i][j] = "<strong>A</strong> ";
                             }
+                            if (fantasma2[0] == i && fantasma2[1] == j) {
+                                casilla[i][j] = "<strong>B</strong> ";
+                            }
                             if (fantasma3[0] == i && fantasma3[1] == j) {
-                                casilla[i][j] = "<strong>H</strong> ";
+                                casilla[i][j] = "<strong>C</strong> ";
                             }
                             if (jugador[0] == i && jugador[1] == j) {
                                 casilla[i][j] = "<strong>J </strong>";
@@ -281,8 +285,8 @@
                             document.write(casilla[i][j] + " ");
                         }
                         document.write("</br>");
-
                     }
+                    //esto lo pongo para controlar las posiciones de todos los elementos en todo momento
                     document.writeln("Posiciones iniciales: </br>")
                     document.writeln("Fantasma1: " + fantasma1);
                     document.writeln("</br>")
@@ -292,12 +296,6 @@
                     document.writeln("</br>")
                     document.writeln("Jugador: " + jugador);
                 }
-
-
-
-
-
-
 
                 function crearMapa() {
                     casilla = [
@@ -334,10 +332,6 @@
 
                     ];
                 }
-
-
-
-
             </script>
         </div>
 
