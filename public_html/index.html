@@ -36,6 +36,7 @@
                 //al tener una longitud de 4 posiciones lo diferenciaremos de los fantasmas
                 var jugador = new Array(4);
                 jugador = crearPersonaje(jugador);
+                var puntuacion=0;
                 //buscaremos en que posicion del mapa están situados y cambiaremos ese 1 por la letra que le corresonda
                 //F son los fantasmas y J el jugador
                 pintarPersonajes();
@@ -47,7 +48,7 @@
                 //metodo que se irá repitiendo que contiene todas las operaciones que tienen que ver con el movimiento
                 function operaMovimiento() {
                     //comprobaremos en cada movimiento si el fantasma ha chocado con el jugador
-
+                    puntuacion+=0.5;
                     consultaColision(fantasma1);
                     consultaColision(fantasma2);
                     consultaColision(fantasma3);
@@ -61,7 +62,7 @@
                         direcValidaF2 = comprobarDireccion(fantasma2);
                         direcValidaF3 = comprobarDireccion(fantasma3);
                         if (forzarDireccion() == true) {
-                            jugador[2]=jugador[3];
+                            jugador[2] = jugador[3];
                         }
                         direcValidaJ = comprobarDireccion(jugador);
 
@@ -106,10 +107,7 @@
 
 
                 function comprobarDireccion(elemento) {
-                    //var cruilla = esCruilla(elemento);
-
-                    //segun la posicion a la que vamos comprobaremos si la siguiente casilla es una pared.
-
+                   //segun la posicion a la que vamos comprobaremos si la siguiente casilla es una pared.
                     switch (elemento[2]) {
                         case 1:
                             if (mapa[elemento[0] - 1][elemento[1]] != 0) {
@@ -213,29 +211,31 @@
                 function consultaColision(fantasma) {
                     //si el jugador y el fantasma ocupan la misma posicion habrán colisionado
                     if (jugador[0] == fantasma[0] && jugador[1] == fantasma[1]) {
-
-                        alert("Colision -1 Vida");
-
+                            alert("Colision -1 Vida | Puntuación: "+parseInt(puntuacion)+" segundos");
+                        clearInterval(repite);
                     }
-
                     //si el fantasma esta delante del jugador y se van a cruzar también lo detectaremos como colisión para que no intercambien posiciones
                     if (jugador[0] == fantasma[0]) {//ej: si estan en la misma fila
                         //si el jugador va a la casilla derecha y se encuentra el fantasma en la siguiente que va a la izquieda habrá colisión.
                         if (jugador[1] + 1 == fantasma[1] && jugador[2] == 2 && fantasma[2] == 4) {
-                            alert("Colision -1 Vida");
+                            alert("Colision -1 Vida | Puntuación: "+parseInt(puntuacion)+" segundos");
+                            clearInterval(repite);
                         }
                         //si el fantasma va a la derecha y el jugador a la izquierda habrá colisión
                         if (jugador[1] - 1 == fantasma[1] && jugador[2] == 4 && fantasma[2] == 2) {
-                            alert("Colision -1 Vida");
+                            alert("Colision -1 Vida | Puntuación: "+parseInt(puntuacion)+" segundos");
+                            clearInterval(repite);
                         }
 
                     }
                     if (jugador[1] == fantasma[1]) {
                         if (jugador[0] - 1 == fantasma[0] && jugador[2] == 1 && fantasma[2] == 3) {
-                            alert("Colision -1 Vida");
+                            alert("Colision -1 Vida | Puntuación: "+parseInt(puntuacion)+" segundos");
+                            clearInterval(repite);
                         }
                         if (jugador[0] + 1 == fantasma[0] && jugador[2] == 3 && fantasma[2] == 1) {
-                            alert("Colision -1 Vida");
+                            alert("Colision -1 Vida | Puntuación: "+parseInt(puntuacion)+" segundos");
+                            clearInterval(repite);
                         }
                     }
 
@@ -344,11 +344,6 @@
                 }
 
                 function pintarMapa() {
-                    //var canv = document.createElement("canvas");
-//                    canv.setAttribute("id", "mapa");
-//                    canv.setAttribute("width", "300");
-//                    canv.setAttribute("height", "300");
-//                    document.body.appendChild(canv);
                     var canvas = document.getElementById("mapa");
                     var ctx = canvas.getContext("2d");
                     ctx.clearRect(0, 0, 600, 600);
